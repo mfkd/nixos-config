@@ -2,10 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
-  imports = [];
+  imports = lib.optionals (builtins.pathExists ./local.nix) [
+    ./local.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -48,31 +50,14 @@
     LC_TIME = "de_DE.UTF-8";
   };
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
-  # Add systemd logind configuration for lid switch
-  services.logind = {
-    extraConfig = ''
-      HandleLidSwitch=ignore
-      HandleLidSwitchExternalPower=ignore
-      HandleLidSwitchDocked=ignore
-    '';
-  };
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.mfkd = {
     isNormalUser = true;
     description = "mfkd";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
+    openssh.authorizedKeys.keys = [];
   };
-
-  # Enable automatic login for the user.
-  services.getty.autologinUser = "mfkd";
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -118,8 +103,16 @@
 
   # List services that you want to enable:
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  # Enable remote access for a headless machine.
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

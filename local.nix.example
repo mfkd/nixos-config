@@ -1,0 +1,12 @@
+{ ... }:
+
+{
+  # Copy this file to local.nix and replace the placeholder key.
+  users.users.mfkd.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAA_REPLACE_WITH_YOUR_PUBLIC_KEY"
+  ];
+
+  # If you need a temporary password for local console login, uncomment this.
+  # SSH password login is disabled in configuration.nix.
+  # users.users.mfkd.initialPassword = "change-me";
+}
