@@ -59,10 +59,22 @@
     openssh.authorizedKeys.keys = [];
   };
 
+  programs.git = {
+    enable = true;
+    config = {
+      user.name = "mfkd";
+      user.email = "mattkfd@gmail.com";
+      credential.helper = "cache --timeout=7200";
+      push.autoSetupRemote = true;
+    };
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  security.sudo.wheelNeedsPassword = false;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -71,7 +83,6 @@
     neovim
     starship
     jq
-    git
     curl
     fzf
     ripgrep
@@ -91,6 +102,7 @@
     go
     gopls
     yazi
+    codex
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
