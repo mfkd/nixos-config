@@ -56,6 +56,7 @@
     description = "mfkd";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
+    shell = pkgs.fish;
     openssh.authorizedKeys.keys = [];
   };
 
@@ -67,6 +68,20 @@
       credential.helper = "cache --timeout=7200";
       push.autoSetupRemote = true;
     };
+  };
+
+  programs.fish = {
+    enable = true;
+    shellAliases = {
+      ll = "eza -la";
+      gs = "git status";
+    };
+    interactiveShellInit = ''
+      set -g fish_greeting
+      starship init fish | source
+      fzf --fish | source
+      zoxide init fish | source
+    '';
   };
 
   # Allow unfree packages
