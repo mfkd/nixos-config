@@ -25,9 +25,10 @@
 
   programs.git = {
     enable = true;
-    userName = "mfkd";
-    userEmail = "mattkfd@gmail.com";
-    extraConfig = {
+    signing.format = "openpgp";
+    settings = {
+      user.name = "mfkd";
+      user.email = "mattkfd@gmail.com";
       credential.helper = "cache --timeout=7200";
       push.autoSetupRemote = true;
     };

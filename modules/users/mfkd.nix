@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  programs.fish.enable = true;
+
   users.users.mfkd = {
     isNormalUser = true;
     description = "mfkd";
