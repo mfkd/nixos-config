@@ -34,3 +34,16 @@
                              ////\\/   \/\//\            \00OO\                                                          
                              *//\\/     \/\//\            \0000\                                                         
                               ****       ``***`            ****                                             
+
+Layout:
+- `hosts/nixos/default.nix`: host entrypoint
+- `modules/`: shared system modules
+- `home/mfkd.nix`: user environment managed by Home Manager
+- `local.nix`: untracked host-local overrides such as authorized keys
+
+Common commands:
+
+```bash
+sudo nixos-rebuild switch --flake /etc/nixos#nixos
+home-manager generations
+```
