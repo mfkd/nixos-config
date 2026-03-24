@@ -39,16 +39,13 @@
       fzf --fish | source
       zoxide init fish --cmd cd | source
     '';
-    shellAbbrs = {
+    shellAliases = {
       ".." = "cd ..";
       "..." = "cd ../..";
       "...." = "cd ../../..";
       "....." = "cd ../../../..";
       by = "bat -l yaml";
-      d = "docker";
-      g = "git";
       gs = "git status";
-      k = "kubectl";
       l = "eza --icons -l --all --group-directories-first";
       lT = "eza --icons -T --git-ignore --level=4 --group-directories-first";
       ll = "eza --icons -l --all --all --group-directories-first --git";
@@ -56,6 +53,11 @@
       ls = "eza --icons --group-directories-first";
       lt = "eza --icons -T --git-ignore --level=2 --group-directories-first";
       tree = "eza --icons -T";
+    };
+    shellAbbrs = {
+      d = "docker";
+      g = "git";
+      k = "kubectl";
       v = "nvim";
       vi = "nvim";
       vim = "nvim";
