@@ -903,6 +903,7 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    branch = 'master',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -920,8 +921,8 @@ require('lazy').setup({
         'vim',
         'vimdoc',
       },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
+      -- Keep startup offline-safe on this machine.
+      auto_install = false,
       highlight = {
         enable = true,
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
