@@ -2,16 +2,22 @@
 
 {
   home.sessionVariables = {
+    EDITOR = "nvim";
     FZF_ALT_C_COMMAND = "fd --type d --hidden --follow --exclude .git";
     FZF_ALT_C_OPTS = "--preview 'tree -C {} | head -200'";
     FZF_CTRL_T_COMMAND = "fd --color=always --type f --hidden --follow --exclude .git";
     FZF_DEFAULT_COMMAND = "fd --color=always --type f --hidden --follow --exclude .git";
     FZF_DEFAULT_OPTS = "--ansi";
     MANPATH = "/usr/share/man";
+    VISUAL = "nvim";
   };
 
   programs.fish = {
     enable = true;
+    loginShellInit = ''
+      set -gx EDITOR nvim
+      set -gx VISUAL nvim
+    '';
     preferAbbrs = true;
     functions."man-find" = {
       description = "Fuzzy-find a man page";
@@ -50,6 +56,9 @@
       ls = "eza --icons --group-directories-first";
       lt = "eza --icons -T --git-ignore --level=2 --group-directories-first";
       tree = "eza --icons -T";
+      v = "nvim";
+      vi = "nvim";
+      vim = "nvim";
     };
   };
 
