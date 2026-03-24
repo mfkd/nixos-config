@@ -4,6 +4,7 @@
   imports =
     [
       ../../hardware-configuration.nix
+      ./brightness.nix
       ../../modules/system/base.nix
       ../../modules/system/packages.nix
       ../../modules/services/ssh.nix
