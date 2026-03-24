@@ -12,6 +12,7 @@
 
   programs.fish = {
     enable = true;
+    preferAbbrs = true;
     functions."man-find" = {
       description = "Fuzzy-find a man page";
       body = ''
@@ -32,7 +33,7 @@
       fzf --fish | source
       zoxide init fish --cmd cd | source
     '';
-    shellAliases = {
+    shellAbbrs = {
       ".." = "cd ..";
       "..." = "cd ../..";
       "...." = "cd ../../..";
@@ -53,7 +54,6 @@
   };
 
   xdg.configFile = {
-    "aliasrc".source = ./files/aliasrc;
     "fish/fish_plugins".source = ./files/fish/fish_plugins;
   };
 }
