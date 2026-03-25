@@ -13,7 +13,6 @@
     htop
     jq
     ripgrep
-    starship
     tmux
     tree
     yazi
