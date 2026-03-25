@@ -15,7 +15,6 @@
     jq
     gnumake
     ripgrep
-    tmux
     tree
     unzip
     yazi
