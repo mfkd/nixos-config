@@ -2,7 +2,7 @@
 
 let
   device = "intel_backlight";
-  lowBrightness = 42;
+  lowBrightness = 1;
 in
 {
   systemd.services.low-brightness = {
