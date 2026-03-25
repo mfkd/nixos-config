@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   home.sessionVariables = {
@@ -18,6 +18,21 @@
       set -gx EDITOR nvim
       set -gx VISUAL nvim
     '';
+    plugins = [
+      {
+        name = "autopair";
+        src = pkgs.fishPlugins.autopair.src;
+      }
+      {
+        name = "catppuccin-fish";
+        src = pkgs.fetchFromGitHub {
+          owner = "catppuccin";
+          repo = "fish";
+          rev = "5fc5ae9c2ec22eb376cb03ce76f0d262a38960f3";
+          hash = "sha256-3KNWYXfOMzZovdjwjBpjSH8cVlD4CO2QmQcCyQE4Dac=";
+        };
+      }
+    ];
     preferAbbrs = true;
     functions."man-find" = {
       description = "Fuzzy-find a man page";
@@ -63,9 +78,5 @@
       vim = "nvim";
       lg = "lazygit";
     };
-  };
-
-  xdg.configFile = {
-    "fish/fish_plugins".source = ./files/fish/fish_plugins;
   };
 }
