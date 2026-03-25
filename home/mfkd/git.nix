@@ -3,6 +3,13 @@
     enable = true;
     signing.format = "openpgp";
     settings = {
+      alias = {
+        br = "branch";
+        ci = "commit";
+        co = "checkout";
+        di = "diff";
+        st = "status -sb";
+      };
       credential.helper = "cache --timeout=7200";
       push.autoSetupRemote = true;
       safe.directory = "/etc/nixos";
