@@ -7,22 +7,16 @@
   '';
 
   home.sessionVariables = {
-    EDITOR = "nvim";
     FZF_ALT_C_COMMAND = "fd --type d --hidden --follow --exclude .git";
     FZF_ALT_C_OPTS = "--preview 'tree -C {} | head -200'";
     FZF_CTRL_T_COMMAND = "fd --color=always --type f --hidden --follow --exclude .git";
     FZF_DEFAULT_COMMAND = "fd --color=always --type f --hidden --follow --exclude .git";
     FZF_DEFAULT_OPTS = "--ansi";
     MANPATH = "/usr/share/man";
-    VISUAL = "nvim";
   };
 
   programs.fish = {
     enable = true;
-    loginShellInit = ''
-      set -gx EDITOR nvim
-      set -gx VISUAL nvim
-    '';
     plugins = [
       {
         name = "autopair";
@@ -74,7 +68,6 @@
       v = "nvim";
       vi = "nvim";
       vim = "nvim";
-      lg = "lazygit";
     };
   };
 
@@ -128,5 +121,11 @@
         crust = "#11111b";
       };
     };
+  };
+
+  programs.lazygit = {
+    enable = true;
+    enableFishIntegration = true;
+    shellWrapperName = "lg";
   };
 }
