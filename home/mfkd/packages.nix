@@ -8,13 +8,16 @@
     fastfetch
     fd
     fzf
+    gcc
     go
     gopls
     htop
     jq
+    gnumake
     ripgrep
     tmux
     tree
+    unzip
     yazi
     zoxide
   ];
