@@ -9,5 +9,6 @@
     neovim
     unzip
     vim
+    lazygit
   ];
 }
