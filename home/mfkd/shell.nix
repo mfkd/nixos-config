@@ -1,6 +1,11 @@
 { pkgs, ... }:
 
 {
+  xdg.configFile."fish/conf.d/00-home-manager-key-bindings.fish".text = ''
+    status is-interactive || exit
+    set -q fish_key_bindings; or set -g fish_key_bindings fish_default_key_bindings
+  '';
+
   home.sessionVariables = {
     EDITOR = "nvim";
     FZF_ALT_C_COMMAND = "fd --type d --hidden --follow --exclude .git";
@@ -23,15 +28,6 @@
         name = "autopair";
         src = pkgs.fishPlugins.autopair.src;
       }
-      {
-        name = "catppuccin-fish";
-        src = pkgs.fetchFromGitHub {
-          owner = "catppuccin";
-          repo = "fish";
-          rev = "5fc5ae9c2ec22eb376cb03ce76f0d262a38960f3";
-          hash = "sha256-3KNWYXfOMzZovdjwjBpjSH8cVlD4CO2QmQcCyQE4Dac=";
-        };
-      }
     ];
     preferAbbrs = true;
     functions."man-find" = {
@@ -53,6 +49,9 @@
       starship init fish | source
       fzf --fish | source
       zoxide init fish --cmd cd | source
+    '';
+    shellInitLast = ''
+      status is-interactive; and fish_config theme choose catppuccin-mocha
     '';
     shellAliases = {
       ".." = "cd ..";
