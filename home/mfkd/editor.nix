@@ -33,7 +33,6 @@ in
     plugins = with pkgs.vimPlugins; [
       catppuccin-nvim
       conform-nvim
-      fff-nvim
       gitsigns-nvim
       guess-indent-nvim
       lazydev-nvim

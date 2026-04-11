@@ -52,33 +52,6 @@ require('which-key').setup {
   },
 }
 
-require('fff').setup {
-  keymaps = {
-    close = '<C-c>',
-  },
-}
-vim.keymap.set('n', '<leader>sf', function()
-  require('fff').find_files()
-end, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>sg', function()
-  require('fff').live_grep {
-    grep = {
-      modes = { 'fuzzy', 'plain' },
-    },
-  }
-end, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sw', function()
-  require('fff').live_grep {
-    query = vim.fn.expand '<cword>',
-    grep = {
-      modes = { 'fuzzy', 'plain' },
-    },
-  }
-end, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>sn', function()
-  require('fff').find_files_in_dir(vim.fn.getcwd())
-end, { desc = '[S]earch Files in Cwd [N]ow' })
-
 local telescope = require 'telescope'
 telescope.setup {
   extensions = {
@@ -92,6 +65,12 @@ pcall(telescope.load_extension, 'fzf')
 pcall(telescope.load_extension, 'ui-select')
 
 local builtin = require 'telescope.builtin'
+vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+vim.keymap.set('n', '<leader>sn', function()
+  builtin.find_files { cwd = vim.fn.getcwd() }
+end, { desc = '[S]earch Files in Cwd [N]ow' })
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
 vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
