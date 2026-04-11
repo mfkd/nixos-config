@@ -4,6 +4,7 @@
   home.packages = with pkgs; [
     btop
     codex
+    delta
     eza
     fastfetch
     fd
