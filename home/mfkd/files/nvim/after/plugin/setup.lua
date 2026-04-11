@@ -52,7 +52,11 @@ require('which-key').setup {
   },
 }
 
-require('fff').setup {}
+require('fff').setup {
+  keymaps = {
+    close = '<C-c>',
+  },
+}
 vim.keymap.set('n', '<leader>sf', function()
   require('fff').find_files()
 end, { desc = '[S]earch [F]iles' })

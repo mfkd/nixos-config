@@ -406,6 +406,23 @@ in
         end
       '';
     };
+    functions.btop = {
+      description = "Launch btop with the current Catppuccin theme";
+      body = ''
+        set -l theme dark
+
+        if set -q TERM_THEME
+          switch $TERM_THEME
+          case light
+            set theme light
+          case dark
+            set theme dark
+          end
+        end
+
+        ${pkgs.btop}/bin/btop --config ~/.config/btop/btop-$theme.conf $argv
+      '';
+    };
     functions."__set_fzf_theme" = {
       description = "Apply the current theme to fzf";
       body = ''
