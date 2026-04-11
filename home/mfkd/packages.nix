@@ -11,7 +11,6 @@
     fzf
     gcc
     go
-    gopls
     htop
     jq
     gnumake
