@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -18,5 +18,6 @@
     unzip
     yazi
     zoxide
+    inputs.hunk.packages.${pkgs.stdenv.hostPlatform.system}.hunk
   ];
 }

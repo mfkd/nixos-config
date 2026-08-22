@@ -6,8 +6,12 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hunk = {
+      url = "github:modem-dev/hunk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
-  outputs = { nixpkgs, home-manager, ... }: {
+  outputs = inputs@{ nixpkgs, home-manager, ... }: {
     nixosConfigurations = {
       # This should correspond to the hostname of the machine
       nixos = nixpkgs.lib.nixosSystem {
@@ -19,6 +23,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
+            home-manager.extraSpecialArgs = { inherit inputs; };
             home-manager.users.mfkd = import ./home/mfkd;
           }
         ];
