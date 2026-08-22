@@ -9,7 +9,6 @@
       ../../modules/system/packages.nix
       ../../modules/services/ssh.nix
       ../../modules/services/power.nix
-      ../../modules/services/spotifyd.nix
       ../../modules/users/mfkd.nix
     ]
     ++ lib.optionals (builtins.pathExists ../../local.nix) [
