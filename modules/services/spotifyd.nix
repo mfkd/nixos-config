@@ -3,7 +3,7 @@
 {
   hardware.alsa = {
     enable = true;
-    defaultDevice.playback = "hw:CARD=E50,DEV=0";
+    defaultDevice.playback = "plughw:CARD=E50,DEV=0";
   };
 
   services.spotifyd = {
@@ -12,7 +12,7 @@
       device_name = "nixos";
       device_type = "speaker";
       backend = "alsa";
-      device = "hw:CARD=E50,DEV=0";
+      device = "plughw:CARD=E50,DEV=0";
       volume_controller = "softvol";
       bitrate = 320;
       use_mpris = false;
