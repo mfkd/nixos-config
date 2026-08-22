@@ -13,7 +13,8 @@
       device_type = "speaker";
       backend = "alsa";
       device = "plughw:CARD=E50,DEV=0";
-      volume_controller = "softvol";
+      volume_controller = "none";
+      initial_volume = 100;
       bitrate = 320;
       use_mpris = false;
       disable_discovery = false;
