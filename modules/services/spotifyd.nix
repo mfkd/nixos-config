@@ -16,6 +16,7 @@
       volume_controller = "none";
       initial_volume = 100;
       bitrate = 320;
+      normalisation = false;
       use_mpris = false;
       disable_discovery = false;
       zeroconf_port = 4070;
