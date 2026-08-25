@@ -11,13 +11,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = inputs@{ nixpkgs, home-manager, ... }: {
-    nixosConfigurations = {
-      # This should correspond to the hostname of the machine
-      nixos = nixpkgs.lib.nixosSystem {
+  outputs = inputs@{ nixpkgs, home-manager, ... }:
+    let
+      mkSystem = profile: nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./hosts/nixos
+          profile
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -28,6 +28,11 @@
           }
         ];
       };
+    in
+    {
+      nixosConfigurations = {
+        nixos = mkSystem ./profiles/headless.nix;
+        nixos-interactive = mkSystem ./profiles/interactive.nix;
+      };
     };
-  };
 }

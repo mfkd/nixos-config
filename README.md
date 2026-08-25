@@ -37,13 +37,33 @@
 
 Layout:
 - `hosts/nixos/default.nix`: host entrypoint
+- `profiles/headless.nix`: low-backlight, lid-open server profile
+- `profiles/interactive.nix`: Hyprland desktop profile
 - `modules/`: shared system modules
-- `home/mfkd.nix`: user environment managed by Home Manager
-- `local.nix`: untracked host-local overrides such as authorized keys
+- `home/mfkd/default.nix`: shared user environment managed by Home Manager
+- `home/mfkd/desktop.nix`: interactive-only Hyprland user environment
+- `local.nix`: host-local overrides such as authorized keys
 
-Common commands:
+Build or activate the headless system:
 
 ```bash
-sudo nixos-rebuild switch --flake /etc/nixos#nixos
+sudo nixos-rebuild switch --flake path:/etc/nixos#nixos
+```
+
+Build or activate the interactive system:
+
+```bash
+sudo nixos-rebuild switch --flake path:/etc/nixos#nixos-interactive
+```
+
+The interactive profile keeps the console login instead of running a display
+manager. Logging in as `mfkd` on `tty1` starts an UWSM-managed Hyprland
+session automatically. Other TTYs and SSH sessions remain normal shells. Set a
+working local password with `passwd` before activating the interactive profile;
+the same password is used by Hyprlock.
+
+Home Manager generations remain available in either profile:
+
+```bash
 home-manager generations
 ```

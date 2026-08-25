@@ -5,5 +5,8 @@
 { ... }:
 
 {
-  imports = [ ./hosts/nixos ];
+  imports = [
+    ./hosts/nixos
+    ./profiles/headless.nix
+  ];
 }
