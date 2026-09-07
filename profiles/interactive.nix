@@ -3,10 +3,9 @@
 {
   home-manager.users.mfkd.imports = [ ../home/mfkd/desktop.nix ];
 
-  programs.hyprland = {
+  programs.niri = {
     enable = true;
-    withUWSM = true;
-    xwayland.enable = true;
+    useNautilus = false;
   };
 
   hardware = {
@@ -35,7 +34,6 @@
   };
 
   security = {
-    pam.services.hyprlock = { };
     polkit.enable = true;
     rtkit.enable = true;
   };
@@ -51,10 +49,6 @@
   xdg.portal = {
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     xdgOpenUsePortal = true;
-    config.hyprland = {
-      default = [ "hyprland" "gtk" ];
-      "org.freedesktop.impl.portal.AppChooser" = [ "gtk" ];
-      "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
-    };
+    config.niri."org.freedesktop.impl.portal.AppChooser" = "gtk";
   };
 }

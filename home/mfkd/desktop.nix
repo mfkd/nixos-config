@@ -1,12 +1,18 @@
 { config, lib, pkgs, ... }:
 
 let
-  canSuspend = pkgs.writeShellScript "hypridle-can-suspend" ''
+  canSuspend = pkgs.writeShellScript "idle-can-suspend" ''
     if ${pkgs.iproute2}/bin/ss -Htn state established '( sport = :ssh )' | ${pkgs.gnugrep}/bin/grep -q .; then
       exit 1
     fi
 
     exit 0
+  '';
+
+  idleSuspend = pkgs.writeShellScript "idle-suspend" ''
+    if ${canSuspend}; then
+      exec ${pkgs.systemd}/bin/systemctl suspend
+    fi
   '';
 
   # The pinned package emits an empty PATH wrapper argument when no selected
@@ -20,17 +26,35 @@ let
     '';
   };
 
-  uwsm = lib.getExe pkgs.uwsm;
   ghostty = lib.getExe pkgs.ghostty;
   chrome = lib.getExe config.programs.google-chrome.finalPackage;
   walker = lib.getExe pkgs.walker;
   yazi = lib.getExe pkgs.yazi;
-  hyprlock = lib.getExe pkgs.hyprlock;
+  niri = lib.getExe pkgs.niri;
+  niriSession = "${pkgs.niri}/bin/niri-session";
+  swaylock = lib.getExe pkgs.swaylock;
   playerctl = lib.getExe pkgs.playerctl;
   brightnessctl = lib.getExe pkgs.brightnessctl;
   wpctl = "${pkgs.wireplumber}/bin/wpctl";
 
-  terminalCommand = "${uwsm} app -- ${ghostty}";
+  workspaceBinds = lib.listToAttrs (
+    lib.concatMap (
+      workspace:
+      let
+        number = toString workspace;
+      in
+      [
+        {
+          name = "Mod+${number}";
+          value."focus-workspace" = workspace;
+        }
+        {
+          name = "Mod+Shift+${number}";
+          value."move-window-to-workspace" = workspace;
+        }
+      ]
+    ) (lib.range 1 9)
+  );
 in
 {
   home = {
@@ -49,8 +73,8 @@ in
 
   programs = {
     fish.loginShellInit = ''
-      if status is-login; and status is-interactive; and test (tty) = /dev/tty1; and ${uwsm} check may-start >/dev/null
-        exec ${uwsm} start hyprland.desktop
+      if status is-login; and status is-interactive; and test (tty) = /dev/tty1
+        exec ${niriSession}
       end
     '';
 
@@ -70,51 +94,29 @@ in
       commandLineArgs = [ "--ozone-platform=wayland" ];
     };
 
-    hyprlock = {
+    swaylock = {
       enable = true;
       settings = {
-        general = {
-          hide_cursor = true;
-          immediate_render = true;
-        };
-
-        background = [
-          {
-            monitor = "";
-            color = "rgb(1e1e2e)";
-          }
-        ];
-
-        label = [
-          {
-            monitor = "";
-            text = "$TIME";
-            color = "rgb(cdd6f4)";
-            font_family = "JetBrainsMono Nerd Font";
-            font_size = 64;
-            position = "0, 120";
-            halign = "center";
-            valign = "center";
-          }
-        ];
-
-        input-field = [
-          {
-            monitor = "";
-            size = "320, 56";
-            position = "0, -20";
-            dots_center = true;
-            fade_on_empty = false;
-            font_color = "rgb(cdd6f4)";
-            inner_color = "rgb(313244)";
-            outer_color = "rgb(cba6f7)";
-            check_color = "rgb(89b4fa)";
-            fail_color = "rgb(f38ba8)";
-            outline_thickness = 2;
-            placeholder_text = "Password";
-            shadow_passes = 0;
-          }
-        ];
+        color = "1e1e2e";
+        font = "JetBrainsMono Nerd Font";
+        font-size = 24;
+        indicator-radius = 70;
+        indicator-thickness = 8;
+        inside-color = "313244";
+        inside-clear-color = "313244";
+        inside-ver-color = "313244";
+        inside-wrong-color = "313244";
+        key-hl-color = "cba6f7";
+        ring-color = "45475a";
+        ring-clear-color = "f9e2af";
+        ring-ver-color = "89b4fa";
+        ring-wrong-color = "f38ba8";
+        separator-color = "00000000";
+        text-color = "cdd6f4";
+        text-clear-color = "f9e2af";
+        text-ver-color = "89b4fa";
+        text-wrong-color = "f38ba8";
+        show-failed-attempts = true;
       };
     };
 
@@ -127,8 +129,8 @@ in
         height = 30;
         spacing = 4;
 
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "hyprland/window" ];
+        modules-left = [ "niri/workspaces" ];
+        modules-center = [ "niri/window" ];
         modules-right = [
           "network"
           "bluetooth"
@@ -137,16 +139,13 @@ in
           "clock"
         ];
 
-        "hyprland/workspaces" = {
-          disable-scroll = true;
+        "niri/workspaces" = {
           format = "{name}";
-          persistent-workspaces."*" = [ 1 2 3 4 5 ];
         };
 
-        "hyprland/window" = {
-          format = "{}";
+        "niri/window" = {
+          format = "{title}";
           max-length = 80;
-          separate-outputs = true;
         };
 
         network = {
@@ -155,7 +154,7 @@ in
           format-ethernet = "{ifname}";
           format-disconnected = "offline";
           tooltip-format = "{ifname}: {ipaddr}/{cidr}";
-          on-click = "${terminalCommand} -e ${pkgs.networkmanager}/bin/nmtui";
+          on-click = "${ghostty} -e ${pkgs.networkmanager}/bin/nmtui";
         };
 
         bluetooth = {
@@ -163,7 +162,7 @@ in
           format-connected = "bt {num_connections}";
           format-disabled = "";
           tooltip-format-connected = "{device_enumerate}";
-          on-click = "${terminalCommand} -e ${pkgs.bluez}/bin/bluetoothctl";
+          on-click = "${ghostty} -e ${pkgs.bluez}/bin/bluetoothctl";
         };
 
         wireplumber = {
@@ -272,38 +271,29 @@ in
       package = elephant;
     };
 
-    hypridle = {
+    swayidle = {
       enable = true;
-      settings = {
-        general = {
-          lock_cmd = "pidof hyprlock || ${hyprlock}";
-          before_sleep_cmd = "loginctl lock-session";
-          after_sleep_cmd = "hyprctl dispatch dpms on";
-          ignore_dbus_inhibit = false;
-          inhibit_sleep = 2;
-        };
-
-        listener = [
-          {
-            timeout = 300;
-            on-timeout = "loginctl lock-session";
-          }
-          {
-            timeout = 600;
-            on-timeout = "hyprctl dispatch dpms off";
-            on-resume = "hyprctl dispatch dpms on";
-          }
-          {
-            timeout = 1800;
-            on-timeout = "systemctl suspend";
-            condition_cmd = "${canSuspend}";
-            condition_retry = 60;
-          }
-        ];
+      events = {
+        before-sleep = "${swaylock} -f";
+        lock = "${swaylock} -f";
       };
+      timeouts = [
+        {
+          timeout = 300;
+          command = "${pkgs.systemd}/bin/loginctl lock-session";
+        }
+        {
+          timeout = 600;
+          command = "${niri} msg action power-off-monitors";
+        }
+        {
+          timeout = 1800;
+          command = "${idleSuspend}";
+        }
+      ];
     };
 
-    hyprpolkitagent.enable = true;
+    polkit-gnome.enable = true;
 
     mako = {
       enable = true;
@@ -414,156 +404,133 @@ in
 
   systemd.user.services.walker.Unit.PartOf = [ "graphical-session.target" ];
 
-  wayland.windowManager.hyprland = {
+  wayland.windowManager.niri = {
     enable = true;
-    package = null;
+    package = pkgs.niri;
     portalPackage = null;
-    configType = "lua";
     systemd.enable = false;
+    xwaylandSatellitePackage = pkgs.xwayland-satellite;
 
     settings = {
-      monitor = [
+      _children = [
         {
-          output = "eDP-1";
-          mode = "preferred";
-          position = "auto";
-          scale = 1.5;
-        }
-        {
-          output = "";
-          mode = "preferred";
-          position = "auto";
-          scale = 1;
-        }
-      ];
-
-      env = [
-        { _args = [ "XCURSOR_SIZE" "24" ]; }
-        { _args = [ "HYPRCURSOR_SIZE" "24" ]; }
-      ];
-
-      config = {
-        general = {
-          gaps_in = 6;
-          gaps_out = 10;
-          border_size = 2;
-          col = {
-            active_border = "rgba(cba6f7ff)";
-            inactive_border = "rgba(45475aaa)";
+          output = {
+            _args = [ "eDP-1" ];
+            scale = 1.5;
           };
-          resize_on_border = true;
-          allow_tearing = false;
-          layout = "scrolling";
-        };
+        }
+      ];
 
-        decoration = {
-          rounding = 4;
-          rounding_power = 2;
-          active_opacity = 1.0;
-          inactive_opacity = 1.0;
-          shadow.enabled = false;
-          blur.enabled = false;
-        };
+      input.keyboard.xkb.layout = "us";
 
-        animations.enabled = true;
-
-        scrolling = {
-          column_width = 1.0;
-          direction = "right";
-          explicit_column_widths = "0.333, 0.5, 0.667, 1.0";
-          focus_fit_method = 1;
-          follow_focus = true;
-          fullscreen_on_one_column = true;
-          wrap_focus = true;
-          wrap_swapcol = true;
+      layout = {
+        gaps = 10;
+        "center-focused-column" = "never";
+        "default-column-width".proportion = 1.0;
+        "preset-column-widths"._children = [
+          { proportion = 0.33333; }
+          { proportion = 0.5; }
+          { proportion = 0.66667; }
+          { proportion = 1.0; }
+        ];
+        "focus-ring" = {
+          width = 2;
+          "active-color" = "#cba6f7";
+          "inactive-color" = "#45475a";
         };
-
-        input = {
-          kb_layout = "us";
-          follow_mouse = 1;
-          sensitivity = 0;
-          touchpad.natural_scroll = false;
-        };
-
-        misc = {
-          background_color = "rgb(1e1e2e)";
-          disable_hyprland_logo = true;
-          force_default_wallpaper = 0;
-        };
+        border.off = { };
+        shadow.off = { };
+        "background-color" = "#1e1e2e";
       };
 
-      animation = [
-        { leaf = "windows"; enabled = true; speed = 8; bezier = "default"; style = "popin 96%"; }
-        { leaf = "fade"; enabled = true; speed = 8; bezier = "default"; }
-        { leaf = "workspaces"; enabled = true; speed = 8; bezier = "default"; style = "slide"; }
-      ];
+      animations.slowdown = 0.8;
+      cursor."hide-when-typing" = { };
+      "hotkey-overlay"."skip-at-startup" = { };
+      "prefer-no-csd" = { };
+      "screenshot-path" = null;
 
-      window_rule = [
-        {
-          name = "suppress-maximize-events";
-          match.class = ".*";
-          suppress_event = "maximize";
-        }
-        {
-          name = "fix-xwayland-drags";
-          match = {
-            class = "^$";
-            title = "^$";
-            xwayland = true;
-            float = true;
-            fullscreen = false;
-            pin = false;
-          };
-          no_focus = true;
-        }
-      ];
+      "window-rule" = {
+        "geometry-corner-radius" = 4.0;
+        "clip-to-geometry" = true;
+      };
+
+      binds = {
+        "Mod+Return".spawn = [ ghostty ];
+        "Mod+D".spawn = [ walker ];
+        "Mod+E".spawn = [ ghostty "-e" yazi ];
+        "Mod+B".spawn = [ chrome ];
+        "Mod+Q" = {
+          _props.repeat = false;
+          "close-window" = { };
+        };
+        "Mod+Space"."toggle-window-floating" = { };
+        "Mod+O" = {
+          _props.repeat = false;
+          "toggle-overview" = { };
+        };
+        "Mod+F"."fullscreen-window" = { };
+        "Mod+Ctrl+L".spawn = [ "${pkgs.systemd}/bin/loginctl" "lock-session" ];
+        "Mod+Shift+Q".quit._props."skip-confirmation" = true;
+        "Mod+Escape" = {
+          _props."allow-inhibiting" = false;
+          "toggle-keyboard-shortcuts-inhibit" = { };
+        };
+
+        "Mod+H"."focus-column-left" = { };
+        "Mod+L"."focus-column-right" = { };
+        "Mod+J"."focus-window-down" = { };
+        "Mod+K"."focus-window-up" = { };
+        "Mod+Shift+H"."move-column-left" = { };
+        "Mod+Shift+L"."move-column-right" = { };
+        "Mod+Shift+J"."move-window-down" = { };
+        "Mod+Shift+K"."move-window-up" = { };
+        "Mod+R"."switch-preset-column-width" = { };
+        "Mod+Shift+R"."center-visible-columns" = { };
+        "Mod+P"."move-column-to-first" = { };
+        "Mod+C"."consume-or-expel-window-right" = { };
+
+        "XF86AudioRaiseVolume" = {
+          _props."allow-when-locked" = true;
+          spawn = [ wpctl "set-volume" "-l" "1" "@DEFAULT_AUDIO_SINK@" "5%+" ];
+        };
+        "XF86AudioLowerVolume" = {
+          _props."allow-when-locked" = true;
+          spawn = [ wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-" ];
+        };
+        "XF86AudioMute" = {
+          _props."allow-when-locked" = true;
+          spawn = [ wpctl "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle" ];
+        };
+        "XF86AudioMicMute" = {
+          _props."allow-when-locked" = true;
+          spawn = [ wpctl "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle" ];
+        };
+        "XF86MonBrightnessUp" = {
+          _props."allow-when-locked" = true;
+          spawn = [ brightnessctl "-e4" "-n2" "set" "5%+" ];
+        };
+        "XF86MonBrightnessDown" = {
+          _props."allow-when-locked" = true;
+          spawn = [ brightnessctl "-e4" "-n2" "set" "5%-" ];
+        };
+        "XF86AudioNext" = {
+          _props."allow-when-locked" = true;
+          spawn = [ playerctl "next" ];
+        };
+        "XF86AudioPause" = {
+          _props."allow-when-locked" = true;
+          spawn = [ playerctl "play-pause" ];
+        };
+        "XF86AudioPlay" = {
+          _props."allow-when-locked" = true;
+          spawn = [ playerctl "play-pause" ];
+        };
+        "XF86AudioPrev" = {
+          _props."allow-when-locked" = true;
+          spawn = [ playerctl "previous" ];
+        };
+      } // workspaceBinds;
     };
-
-    extraConfig = ''
-      local mainMod = "SUPER"
-
-      hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd("${terminalCommand}"))
-      hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("${uwsm} app -- ${walker}"))
-      hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("${terminalCommand} -e ${yazi}"))
-      hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("${uwsm} app -- ${chrome}"))
-      hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-      hl.bind(mainMod .. " + SPACE", hl.dsp.window.float({ action = "toggle" }))
-      hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle", layout_aware = true }))
-      hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("${hyprlock}"))
-      hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd("${uwsm} stop"))
-
-      hl.bind(mainMod .. " + H", hl.dsp.layout("focus l"))
-      hl.bind(mainMod .. " + L", hl.dsp.layout("focus r"))
-      hl.bind(mainMod .. " + J", hl.dsp.focus({ direction = "down" }))
-      hl.bind(mainMod .. " + K", hl.dsp.focus({ direction = "up" }))
-      hl.bind(mainMod .. " + SHIFT + H", hl.dsp.layout("swapcol l"))
-      hl.bind(mainMod .. " + SHIFT + L", hl.dsp.layout("swapcol r"))
-      hl.bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "down" }))
-      hl.bind(mainMod .. " + SHIFT + K", hl.dsp.window.swap({ direction = "up" }))
-      hl.bind(mainMod .. " + R", hl.dsp.layout("colresize +conf"))
-      hl.bind(mainMod .. " + SHIFT + R", hl.dsp.layout("fit visible"))
-      hl.bind(mainMod .. " + P", hl.dsp.layout("promote"))
-      hl.bind(mainMod .. " + C", hl.dsp.layout("consume_or_expel prev"))
-
-      for i = 1, 9 do
-        hl.bind(mainMod .. " + " .. i, hl.dsp.focus({ workspace = i }))
-        hl.bind(mainMod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i }))
-      end
-
-      hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
-      hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
-
-      hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("${wpctl} set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-      hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("${wpctl} set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
-      hl.bind("XF86AudioMute", hl.dsp.exec_cmd("${wpctl} set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
-      hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })
-      hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${brightnessctl} -e4 -n2 set 5%+"), { locked = true, repeating = true })
-      hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${brightnessctl} -e4 -n2 set 5%-"), { locked = true, repeating = true })
-      hl.bind("XF86AudioNext", hl.dsp.exec_cmd("${playerctl} next"), { locked = true })
-      hl.bind("XF86AudioPause", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
-      hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
-      hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("${playerctl} previous"), { locked = true })
-    '';
   };
 
   xdg.mimeApps = {
