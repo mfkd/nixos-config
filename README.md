@@ -60,7 +60,8 @@ The interactive profile keeps the console login instead of running a display
 manager. Logging in as `mfkd` on `tty1` starts a systemd-managed Niri
 session automatically. Other TTYs and SSH sessions remain normal shells. Set a
 working local password with `passwd` before activating the interactive profile;
-the same password is used by Swaylock.
+the same password is used by Swaylock. In Niri, `Mod` is the Super key; press
+`Super+Shift+/` to open its hotkey overlay.
 
 Home Manager generations remain available in either profile:
 
