@@ -216,16 +216,6 @@ in
     };
   };
 
-  programs.ghostty = {
-    enable = true;
-    enableFishIntegration = true;
-    settings = {
-      command = "${pkgs.fish}/bin/fish --login --interactive";
-      "shell-integration" = "fish";
-      theme = "dark:Catppuccin Mocha,light:Catppuccin Latte";
-    };
-  };
-
   programs.tmux = {
     enable = true;
     shell = "${pkgs.fish}/bin/fish";
