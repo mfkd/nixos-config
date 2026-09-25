@@ -10,9 +10,11 @@ let
   '';
 
   idleSuspend = pkgs.writeShellScript "idle-suspend" ''
-    if ${canSuspend}; then
-      exec ${pkgs.systemd}/bin/systemctl suspend
-    fi
+    until ${canSuspend}; do
+      ${pkgs.coreutils}/bin/sleep 60
+    done
+
+    exec ${pkgs.systemd}/bin/systemctl suspend
   '';
 
   # The pinned package emits an empty PATH wrapper argument when no selected
@@ -288,7 +290,8 @@ in
         }
         {
           timeout = 1800;
-          command = "${idleSuspend}";
+          command = "${pkgs.systemd}/bin/systemctl --user start idle-suspend.service";
+          resumeCommand = "${pkgs.systemd}/bin/systemctl --user stop idle-suspend.service";
         }
       ];
     };
@@ -402,7 +405,18 @@ in
     };
   };
 
-  systemd.user.services.walker.Unit.PartOf = [ "graphical-session.target" ];
+  systemd.user.services = {
+    idle-suspend = {
+      Unit = {
+        Description = "Suspend after idle once SSH sessions have ended";
+        After = [ "swayidle.service" ];
+        BindsTo = [ "swayidle.service" ];
+      };
+      Service.ExecStart = idleSuspend;
+    };
+
+    walker.Unit.PartOf = [ "graphical-session.target" ];
+  };
 
   wayland.windowManager.niri = {
     enable = true;
